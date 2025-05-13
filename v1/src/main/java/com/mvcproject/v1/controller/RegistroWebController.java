@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/registro")
@@ -76,49 +77,52 @@ public class RegistroWebController {
     }
 
     @PostMapping("/guardar")
-    public String guardarVehiculo(
-            @RequestParam("placa") String placa,
-            @RequestParam("tipoVehiculoId") Long tipoVehiculoId,
-            @RequestParam("celdaId") Long celdaId) {
+public String guardarVehiculo(
+        @RequestParam("placa") String placa,
+        @RequestParam("tipoVehiculoId") Long tipoVehiculoId,
+        @RequestParam("celdaId") Long celdaId,
+        RedirectAttributes redirectAttributes) {
 
-        try {
-            // Buscar o crear el vehículo
-            VehiculoModel vehiculo = vehiculoRepository.findByPlaca(placa).orElseGet(() -> {
-                VehiculoModel nuevoVehiculo = new VehiculoModel();
-                nuevoVehiculo.setPlaca(placa);
-                TipoVehiculoModel tipo = tipoVehiculoRepository.findById(tipoVehiculoId)
-                        .orElseThrow(() -> new IllegalArgumentException("Tipo de vehículo no encontrado"));
-                nuevoVehiculo.setTipoid(tipo);
-                return vehiculoRepository.save(nuevoVehiculo);
-            });
+    try {
+        // Buscar o crear el vehículo
+        VehiculoModel vehiculo = vehiculoRepository.findByPlaca(placa).orElseGet(() -> {
+            VehiculoModel nuevoVehiculo = new VehiculoModel();
+            nuevoVehiculo.setPlaca(placa);
+            TipoVehiculoModel tipo = tipoVehiculoRepository.findById(tipoVehiculoId)
+                    .orElseThrow(() -> new IllegalArgumentException("Tipo de vehículo no encontrado"));
+            nuevoVehiculo.setTipoid(tipo);
+            return vehiculoRepository.save(nuevoVehiculo);
+        });
 
-            // Obtener la celda seleccionada
-            CeldaModel celda = celdaRepository.findById(celdaId)
-                    .orElseThrow(() -> new IllegalArgumentException("Celda no encontrada"));
+        // Obtener la celda seleccionada
+        CeldaModel celda = celdaRepository.findById(celdaId)
+                .orElseThrow(() -> new IllegalArgumentException("Celda no encontrada"));
 
-            if (!celda.isLibre()) {
-                // Si la celda está ocupada, no permitir registro
-                return "redirect:/registro/nuevo?error=celda_ocupada";
-            }
-
-            // Marcar la celda como ocupada
-            celda.setLibre(false);
-            celdaRepository.save(celda);
-
-            // Crear el registro sin asociar la tarifa aún
-            RegistroModel registro = new RegistroModel();
-            registro.setVehiculo(vehiculo);
-            registro.setCelda(celda);
-            registro.setFechaEntrada(LocalDateTime.now());
-            registro.setFechaSalida(null); // aún no ha salido
-            registroRepository.save(registro);
-
-            return "redirect:/registro/nuevo?success";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "redirect:/registro/nuevo?error=exception";
+        if (!celda.isLibre()) {
+            redirectAttributes.addFlashAttribute("error", "La celda seleccionada está ocupada.");
+            return "redirect:/registro/nuevo";
         }
+
+        // Marcar la celda como ocupada
+        celda.setLibre(false);
+        celdaRepository.save(celda);
+
+        // Crear el registro de ingreso
+        RegistroModel registro = new RegistroModel();
+        registro.setVehiculo(vehiculo);
+        registro.setCelda(celda);
+        registro.setFechaEntrada(LocalDateTime.now());
+        registro.setFechaSalida(null);
+        registroRepository.save(registro);
+
+        redirectAttributes.addFlashAttribute("mensaje", "Vehículo registrado exitosamente.");
+        return "redirect:/registro/nuevo";
+    } catch (Exception e) {
+        e.printStackTrace();
+        redirectAttributes.addFlashAttribute("error", "Error al registrar el vehículo: " + e.getMessage());
+        return "redirect:/registro/nuevo";
     }
+}
 
     @GetMapping("/salida")
     public String mostrarFormularioSalida(Model model) {
