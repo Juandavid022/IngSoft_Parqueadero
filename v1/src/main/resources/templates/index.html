@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Principal | Autos Colombia</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 20px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            width: 200px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .btn.ingreso {
+            background-color: #4CAF50;
+        }
+
+        .btn.ingreso:hover {
+            background-color: #45a049;
+        }
+
+        .btn.salida {
+            background-color: #e74c3c;
+        }
+
+        .btn.salida:hover {
+            background-color: #c0392b;
+        }
+
+        .btn.celdas {
+            background-color: #3498db;
+        }
+
+        .btn.celdas:hover {
+            background-color: #2980b9;
+        }
+
+        .btn.pagos {
+            background-color: #f1c40f;
+            color: #2c3e50;
+        }
+
+        .btn.pagos:hover {
+            background-color: #d4ac0d;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Autos Colombia - Panel Principal</h1>
+        <div class="btn-group">
+            <a class="btn ingreso" th:href="@{/registro/nuevo}">🚗 Realizar Ingreso</a>
+            <a class="btn salida" th:href="@{/registro/salida}">🏁 Validar Salida</a>
+            <a class="btn celdas" th:href="@{/celda/todas}">📋 Listar Celdas</a>
+            <a class="btn pagos" th:href="@{/pagos/ver}">💳 Ver Pagos</a>
+        </div>
+        <div class="footer">
+            &copy; 2025 Autos Colombia - Sistema de Parqueadero JDGR
+        </div>
+    </div>
+</body>
+</html>

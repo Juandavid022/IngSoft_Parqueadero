@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Ingreso Vehículo</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", sans-serif;
+        background-color: #2c3e50;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        background-color: #34495e;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        width: 450px;
+      }
+
+      .home-button {
+        display: inline-block;
+        margin-bottom: 25px;
+        padding: 12px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        background-color: #2980b9;
+        text-decoration: none;
+        border-radius: 10px;
+        transition: background-color 0.3s;
+      }
+
+      .home-button:hover {
+        background-color: #1f6391;
+      }
+
+      h1 {
+        margin-bottom: 25px;
+        text-align: center;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+      }
+
+      label {
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      input,
+      select {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      button {
+        padding: 15px;
+        font-size: 18px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #45a049;
+      }
+
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #bdc3c7;
+        text-align: center;
+      }
+      .error-message {
+        color: red;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      .success-message {
+        color: #2ecc71;
+        margin-top: 10px;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 20px">
+        <a href="/" class="home-button">🏠 Inicio</a>
+      </div>
+      <h1>Ingreso de Vehículo</h1>
+
+      <form action="/registro/guardar" method="post">
+        <div class="form-group">
+          <label for="placa">Placa:</label>
+          <input type="text" id="placa" name="placa" required />
+        </div>
+
+        <div class="form-group">
+          <label for="tipoVehiculoId">Tipo de Vehículo:</label>
+          <select
+            id="tipoVehiculoId"
+            name="tipoVehiculoId"
+            onchange="cargarCeldasDisponibles()"
+            required
+          >
+            <option value="">Seleccione</option>
+            <th:block th:each="tipo : ${tipoVehiculos}">
+              <option
+                th:value="${tipo.id}"
+                th:text="${tipo.descripcion}"
+              ></option>
+            </th:block>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="celdaId">Celda:</label>
+          <select id="celdaId" name="celdaId" required>
+            <option value="">Seleccione un tipo de vehículo primero</option>
+          </select>
+        </div>
+
+        <button type="submit">Registrar Ingreso</button>
+      </form>
+      <div th:if="${mensaje}" class="success-message">
+        <p th:text="${mensaje}"></p>
+      </div>
+      <div th:if="${error}" class="error-message">
+        <p th:text="${error}"></p>
+      </div>
+
+      <div class="footer">Parqueadero Autos Colombia © 2025</div>
+    </div>
+
+    <script>
+      function cargarCeldasDisponibles() {
+        const tipoId = document.getElementById("tipoVehiculoId").value;
+        const celdaSelect = document.getElementById("celdaId");
+        celdaSelect.innerHTML = "";
+
+        if (tipoId) {
+          fetch(`/registro/celdas?tipoVehiculoId=${tipoId}`)
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Respuesta no válida");
+              }
+              return response.json();
+            })
+            .then((data) => {
+              if (data.length === 0) {
+                celdaSelect.innerHTML =
+                  '<option value="">No hay celdas disponibles</option>';
+              } else {
+                celdaSelect.innerHTML = '<option value="">Seleccione</option>';
+                data.forEach((celda) => {
+                  const option = document.createElement("option");
+                  option.value = celda.id;
+                  option.textContent = `Celda ${celda.id}`;
+                  celdaSelect.appendChild(option);
+                });
+              }
+            })
+            .catch((error) => {
+              console.error("Error cargando celdas:", error);
+              celdaSelect.innerHTML =
+                '<option value="">Error al cargar celdas</option>';
+            });
+        } else {
+          celdaSelect.innerHTML =
+            '<option value="">Seleccione un tipo de vehículo primero</option>';
+        }
+      }
+    </script>
+  </body>
+</html>

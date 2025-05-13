@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RS - Estudiantes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #004d99; /* Azul oscuro */
+        }
+
+        .table {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .table thead {
+            background-color: #004d99;
+            color: #fff;
+        }
+
+        .table th, .table td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        .btn-primary {
+            background-color: #004d99;
+            border-color: #004d99;
+        }
+
+        .btn-primary:hover {
+            background-color: #2a7bd1;
+            border-color: #2a7bd1;
+        }
+
+        .btn {
+            width: 48%; /* Ajustamos el tamaño de los botones */
+            padding: 10px; /* Añadimos un padding adicional */
+            border-radius: 5px; /* Bordes redondeados */
+            border: 1px solid #ccc;
+        }
+
+        .btn-back {
+            background-color: #1160b4;
+            border-color: #1160b4;
+        }
+
+        .btn-back:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+        /* Cambios para centrar el botón */
+        .btn-container {
+            display: flex;
+            justify-content: center; /* Centra el botón horizontalmente */
+            align-items: center; /* Centra el botón verticalmente */
+            margin-top: 20px; /* Espacio superior */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Lista de Estudiantes</h2>
+
+        <!-- Tabla para mostrar los alumnos -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Correo</th>
+                    <th>Teléfono</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Iteración sobre la lista de estudiantes -->
+                <tr th:each="student : ${students}">
+                    <!-- Suposición de las propiedades 'username', 'email' y 'phone' -->
+                    <td th:text="${student.username}"></td>
+                    <td th:text="${student.email}"></td>
+                    <td th:text="${student.phone}"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Botón para volver a la página principal -->
+        <div class="btn-container">
+            <button type="button" class="btn btn-primary" onclick="window.location.href='/RS/'">Inicio</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
