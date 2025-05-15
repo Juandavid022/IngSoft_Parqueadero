@@ -1,5 +1,6 @@
 package com.mvcproject.v1.repository;
 
+import com.mvcproject.v1.model.CeldaModel;
 import com.mvcproject.v1.model.RegistroModel;
 import com.mvcproject.v1.model.VehiculoModel;
 
@@ -13,6 +14,7 @@ public interface RegistroRepository extends JpaRepository<RegistroModel, Long> {
     Optional<RegistroModel> findTopByVehiculoPlaca(String placa);
     Optional<RegistroModel> findByVehiculoAndFechaSalidaIsNull(VehiculoModel vehiculo);
     Optional<RegistroModel> findTopByVehiculo_PlacaOrderByFechaEntradaDesc(String placa);
+    Optional<RegistroModel> findTopByCeldaAndFechaSalidaIsNullOrderByFechaEntradaDesc(CeldaModel celda);
 
 
 }

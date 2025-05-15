@@ -1,5 +1,6 @@
 package com.mvcproject.v1.service;
 
+import com.mvcproject.v1.dto.CeldaConVehiculoDTO;
 import com.mvcproject.v1.model.CeldaModel;
 import java.util.List;
 import java.util.Optional;
@@ -9,4 +10,6 @@ public interface CeldaService {
     Optional<CeldaModel> findById(Long id);
     CeldaModel save(CeldaModel celda);
     void deleteById(Long id);
+
+    List<CeldaConVehiculoDTO> obtenerCeldasConVehiculos();
 }

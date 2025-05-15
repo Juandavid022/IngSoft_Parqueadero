@@ -23,7 +23,7 @@ public class VehiculoModel {
     @Schema(description = "Placa", example = "AAA001")
     private String placa;
 
-@ManyToOne(optional = false)
+    @ManyToOne(optional = false)
     @JoinColumn(name = "tipoid", referencedColumnName = "id")
     @Schema(description = "Tipo de vehículo ")
     private TipoVehiculoModel tipoid;

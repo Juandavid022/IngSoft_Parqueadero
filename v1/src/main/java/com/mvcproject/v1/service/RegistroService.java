@@ -9,4 +9,5 @@ public interface RegistroService {
     Optional<RegistroModel> findById(Long id);
     RegistroModel save(RegistroModel registro);
     void deleteById(Long id);
+    
 }

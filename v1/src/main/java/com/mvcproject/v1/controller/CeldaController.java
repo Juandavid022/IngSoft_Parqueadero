@@ -6,15 +6,38 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
 import java.util.List;
 
-@RestController
-@RequestMapping("/api/celdas")
-@CrossOrigin(origins = "*")
+import com.mvcproject.v1.dto.CeldaConVehiculoDTO;
+import com.mvcproject.v1.service.CeldaService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+
+@Controller
+@RequestMapping("/celdas")
 public class CeldaController {
 
     @Autowired
     private CeldaRepository celdaRepository;
+
+    @Autowired
+    private CeldaService celdaService;
+
+    @GetMapping("/celdas")
+    public String mostrarCeldas(Model model) {
+        List<CeldaConVehiculoDTO> celdasConVehiculo = celdaService.obtenerCeldasConVehiculos();
+        for (CeldaConVehiculoDTO dto : celdasConVehiculo) {
+            if ("Inactiva".equalsIgnoreCase(dto.getCelda().getEstado())) {
+                dto.getCelda().setLibre(false); // Forzar a ocupado
+            }
+        }
+        model.addAttribute("celdasConVehiculo", celdasConVehiculo);
+        return "celdas";
+    }
 
     @GetMapping
     public List<CeldaModel> getAll() {
@@ -37,7 +60,7 @@ public class CeldaController {
     public ResponseEntity<CeldaModel> update(@PathVariable Long id, @RequestBody CeldaModel celdaDetails) {
         return celdaRepository.findById(id).map(celda -> {
             celda.setEstado(celdaDetails.getEstado());
-            //celda.setPrecio(celdaDetails.getPrecio());
+            // celda.setPrecio(celdaDetails.getPrecio());
             celda.setTipoVehiculo(celdaDetails.getTipoVehiculo());
             return ResponseEntity.ok(celdaRepository.save(celda));
         }).orElse(ResponseEntity.notFound().build());
