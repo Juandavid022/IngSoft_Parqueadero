@@ -1,20 +1,18 @@
 package com.mvcproject.v1.controller;
 
 import com.mvcproject.v1.model.CeldaModel;
+import com.mvcproject.v1.model.PagoModel;
 import com.mvcproject.v1.model.RegistroModel;
 import com.mvcproject.v1.model.TarifaModel;
 import com.mvcproject.v1.model.TipoVehiculoModel;
 import com.mvcproject.v1.model.VehiculoModel;
 import com.mvcproject.v1.repository.CeldaRepository;
+import com.mvcproject.v1.repository.PagoRepository;
 import com.mvcproject.v1.repository.RegistroRepository;
 import com.mvcproject.v1.repository.TarifaRepository;
 import com.mvcproject.v1.repository.TipoVehiculoRepository;
 import com.mvcproject.v1.repository.VehiculoRepository;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -52,81 +50,71 @@ public class RegistroWebController {
     @Autowired
     private TipoVehiculoRepository tipoVehiculoRepository;
 
-    // Endpoint para mostrar el formulario de registro de vehículo
-    @Operation(summary = "Mostrar formulario de registro de vehículo", description = "Muestra el formulario para registrar un nuevo vehículo.")
+    @Autowired
+    private PagoRepository pagosRepository;
+
     @GetMapping("/nuevo")
     public String mostrarFormularioVehiculo(Model model) {
         model.addAttribute("vehiculo", new VehiculoModel());
         model.addAttribute("tipoVehiculos", tipoVehiculoRepository.findAll());
         model.addAttribute("celdas", new ArrayList<>());
-
-        return "ingreso"; // Vista que muestra el formulario de vehículo
+        return "ingreso";
     }
-
-    // Endpoint para guardar un nuevo vehículo con tipo fijo (ID=1)
-    @Operation(summary = "Registrar un nuevo vehículo", description = "Guarda un nuevo vehículo en la base de datos.", responses = {
-            @ApiResponse(responseCode = "200", description = "Vehículo registrado correctamente"),
-            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
 
     @GetMapping("/celdas")
     @ResponseBody
     public List<CeldaModel> obtenerCeldasPorTipo(@RequestParam("tipoVehiculoId") Long tipoVehiculoId) {
-        // Buscar solo celdas libres que aceptan ese tipo de vehículo
         return celdaRepository.findByTipoVehiculoIdAndLibreTrue(tipoVehiculoId);
     }
 
     @PostMapping("/guardar")
-public String guardarVehiculo(
-        @RequestParam("placa") String placa,
-        @RequestParam("tipoVehiculoId") Long tipoVehiculoId,
-        @RequestParam("celdaId") Long celdaId,
-        RedirectAttributes redirectAttributes) {
+    public String guardarVehiculo(
+            @RequestParam("placa") String placa,
+            @RequestParam("tipoVehiculoId") Long tipoVehiculoId,
+            @RequestParam("celdaId") Long celdaId,
+            RedirectAttributes redirectAttributes) {
 
-    try {
-        // Buscar o crear el vehículo
-        VehiculoModel vehiculo = vehiculoRepository.findByPlaca(placa).orElseGet(() -> {
-            VehiculoModel nuevoVehiculo = new VehiculoModel();
-            nuevoVehiculo.setPlaca(placa);
-            TipoVehiculoModel tipo = tipoVehiculoRepository.findById(tipoVehiculoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Tipo de vehículo no encontrado"));
-            nuevoVehiculo.setTipoid(tipo);
-            return vehiculoRepository.save(nuevoVehiculo);
-        });
+        try {
+            VehiculoModel vehiculo = vehiculoRepository.findByPlaca(placa).orElseGet(() -> {
+                VehiculoModel nuevoVehiculo = new VehiculoModel();
+                nuevoVehiculo.setPlaca(placa);
+                TipoVehiculoModel tipo = tipoVehiculoRepository.findById(tipoVehiculoId)
+                        .orElseThrow(() -> new IllegalArgumentException("Tipo de vehículo no encontrado"));
+                nuevoVehiculo.setTipoid(tipo);
+                return vehiculoRepository.save(nuevoVehiculo);
+            });
 
-        // Obtener la celda seleccionada
-        CeldaModel celda = celdaRepository.findById(celdaId)
-                .orElseThrow(() -> new IllegalArgumentException("Celda no encontrada"));
+            CeldaModel celda = celdaRepository.findById(celdaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Celda no encontrada"));
 
-        if (!celda.isLibre()) {
-            redirectAttributes.addFlashAttribute("error", "La celda seleccionada está ocupada.");
+            if (!celda.isLibre()) {
+                redirectAttributes.addFlashAttribute("error", "La celda seleccionada está ocupada.");
+                return "redirect:/registro/nuevo";
+            }
+
+            celda.setLibre(false);
+            celdaRepository.save(celda);
+
+            RegistroModel registro = new RegistroModel();
+            registro.setVehiculo(vehiculo);
+            registro.setCelda(celda);
+            registro.setFechaEntrada(LocalDateTime.now());
+            registro.setFechaSalida(null);
+            registroRepository.save(registro);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Vehículo registrado exitosamente.");
+            return "redirect:/registro/nuevo";
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("error", "Error al registrar el vehículo: " + e.getMessage());
             return "redirect:/registro/nuevo";
         }
-
-        // Marcar la celda como ocupada
-        celda.setLibre(false);
-        celdaRepository.save(celda);
-
-        // Crear el registro de ingreso
-        RegistroModel registro = new RegistroModel();
-        registro.setVehiculo(vehiculo);
-        registro.setCelda(celda);
-        registro.setFechaEntrada(LocalDateTime.now());
-        registro.setFechaSalida(null);
-        registroRepository.save(registro);
-
-        redirectAttributes.addFlashAttribute("mensaje", "Vehículo registrado exitosamente.");
-        return "redirect:/registro/nuevo";
-    } catch (Exception e) {
-        e.printStackTrace();
-        redirectAttributes.addFlashAttribute("error", "Error al registrar el vehículo: " + e.getMessage());
-        return "redirect:/registro/nuevo";
     }
-}
 
     @GetMapping("/salida")
     public String mostrarFormularioSalida(Model model) {
-        return "salida"; // Vista que muestra el formulario de vehículo
+        return "salida";
     }
 
     @PostMapping("/salida")
@@ -153,14 +141,12 @@ public String guardarVehiculo(
         Duration duracion = Duration.between(fechaEntrada, fechaSalida);
         long horas = Math.max(duracion.toHours(), 1);
 
-        // Obtener la tarifa asociada al tipo de vehículo
         TarifaModel tarifa = tarifaRepository.findByTipoVehiculo(vehiculo.getTipoid());
 
         if (tarifa == null) {
             throw new RuntimeException("No se encontró una tarifa para el tipo de vehículo");
         }
 
-        // Calcular el total a pagar
         BigDecimal total = tarifa.getValorHora().multiply(BigDecimal.valueOf(horas));
 
         model.addAttribute("vehiculo", vehiculo);
@@ -169,7 +155,7 @@ public String guardarVehiculo(
         model.addAttribute("total", total);
         model.addAttribute("placa", placa);
 
-        return "salida"; // Devolver a la misma vista con los datos
+        return "salida";
     }
 
     @PostMapping("/salida/confirmar")
@@ -191,6 +177,7 @@ public String guardarVehiculo(
 
         RegistroModel registro = registroOpt.get();
         registro.setFechaSalida(LocalDateTime.now());
+        System.out.println("Registro que se va a guardar: " + registro);
         registroRepository.save(registro);
 
         // Liberar la celda
@@ -198,7 +185,26 @@ public String guardarVehiculo(
         celda.setLibre(true);
         celdaRepository.save(celda);
 
-        model.addAttribute("mensaje", "Salida registrada exitosamente.");
-        return "salida"; // Muestra el mensaje de éxito
+        // Calcular horas y monto
+        Duration duracion = Duration.between(registro.getFechaEntrada(), registro.getFechaSalida());
+        long horas = Math.max(duracion.toHours(), 1);
+
+        TarifaModel tarifa = tarifaRepository.findByTipoVehiculo(vehiculo.getTipoid());
+        if (tarifa == null) {
+            throw new RuntimeException("No se encontró una tarifa para el tipo de vehículo");
+        }
+
+        BigDecimal total = tarifa.getValorHora().multiply(BigDecimal.valueOf(horas));
+
+        // Registrar el pago
+        PagoModel pago = new PagoModel();
+        pago.setRegistro(registro);
+        pago.setMonto(total);
+        pago.setFechaPago(LocalDateTime.now());
+        System.out.println("pago que se va a guardar: " + pago);
+        pagosRepository.save(pago);
+
+        model.addAttribute("mensaje", "Salida registrada y pago realizado exitosamente.");
+        return "salida";
     }
 }

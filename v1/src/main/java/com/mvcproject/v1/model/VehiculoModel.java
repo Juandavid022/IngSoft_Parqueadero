@@ -1,6 +1,5 @@
 package com.mvcproject.v1.model;
 
-import java.time.LocalDate;
 import jakarta.persistence.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
