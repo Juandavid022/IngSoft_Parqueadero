@@ -13,9 +13,7 @@ import java.util.List;
 
 import com.mvcproject.v1.dto.CeldaConVehiculoDTO;
 import com.mvcproject.v1.service.CeldaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+
 
 @Controller
 @RequestMapping("/celdas")
@@ -32,7 +30,7 @@ public class CeldaController {
         List<CeldaConVehiculoDTO> celdasConVehiculo = celdaService.obtenerCeldasConVehiculos();
         for (CeldaConVehiculoDTO dto : celdasConVehiculo) {
             if ("Inactiva".equalsIgnoreCase(dto.getCelda().getEstado())) {
-                dto.getCelda().setLibre(false); // Forzar a ocupado
+                dto.getCelda().setLibre(false);
             }
         }
         model.addAttribute("celdasConVehiculo", celdasConVehiculo);

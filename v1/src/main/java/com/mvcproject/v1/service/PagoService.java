@@ -8,6 +8,7 @@ import com.mvcproject.v1.model.PagoModel;
 
 public interface PagoService {
     List<PagoModel> findAll();
+    List<PagoModel> findPagosDeHoy();
     Optional<PagoModel> findById(Long id);
     PagoModel save(PagoModel pago);
     void deleteById(Long id);

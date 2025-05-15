@@ -6,6 +6,9 @@ import com.mvcproject.v1.service.PagoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,5 +36,12 @@ public class PagoServiceImpl implements PagoService {
     @Override
     public void deleteById(Long id) {
         pagoRepository.deleteById(id);
+    }
+
+        public List<PagoModel> findPagosDeHoy() {
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.atTime(LocalTime.MAX);
+        return pagoRepository.findByFechaPagoBetween(startOfDay, endOfDay);
     }
 }

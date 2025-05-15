@@ -24,7 +24,7 @@ public class SecurityConfig {
         this.userService = userService;
     }
 
-    // Configuración para usar UserDetailsService (para la autenticación)
+    
     @Bean
     public UserDetailsService userDetailsService() {
         return userService;
@@ -34,17 +34,17 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
         return http.getSharedObject(AuthenticationManagerBuilder.class)
                    .userDetailsService(userDetailsService())
-                   .passwordEncoder(NoOpPasswordEncoder.getInstance())  // No ciframos las contraseñas, las tomamos como texto plano
+                   .passwordEncoder(NoOpPasswordEncoder.getInstance())  
                    .and()
                    .build();
     }
 
-    // Configuración de DaoAuthenticationProvider para la autenticación sin cifrado
+    
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService());
-        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance()); // Usamos NoOpPasswordEncoder para contraseñas en texto plano
+        provider.setPasswordEncoder(NoOpPasswordEncoder.getInstance()); 
         return provider;
     }
   
@@ -55,9 +55,9 @@ public class SecurityConfig {
         
         return httpSecurity
          
-        .csrf().disable() // IMPORTANTE para que el formulario funcione sin token
+        .csrf().disable() 
                      .authorizeHttpRequests(auth -> {
-                    auth.requestMatchers("/login","/registro/guardar","/registro/**","/doc","/swagger-ui/index.html","/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html","/swagger-ui.html/**","/", "/registro/**", "/css/**", "/js/**", "/images/**").permitAll()
+                    auth.requestMatchers("/login","/doc","/swagger-ui/index.html","/swagger-ui/**", "/v3/api-docs/**","/swagger-ui.html","/swagger-ui.html/**","/", "/css/**", "/js/**", "/images/**").permitAll()
                             .anyRequest().authenticated();
                 })
                 .formLogin()
