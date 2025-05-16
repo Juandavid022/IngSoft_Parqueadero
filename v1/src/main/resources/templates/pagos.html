@@ -60,7 +60,8 @@
         margin-top: 20px;
       }
 
-      th, td {
+      th,
+      td {
         padding: 12px;
         text-align: left;
         border-bottom: 1px solid #7f8c8d;
@@ -88,30 +89,92 @@
         <a href="/" class="home-button">🏠 Inicio</a>
       </div>
 
-      <h2>Pagos Realizados</h2>
+      <h2>Pagos de Hoy</h2>
 
       <div th:if="${#lists.isEmpty(pagos)}" class="no-pagos">
         No hay pagos registrados en el sistema.
       </div>
-
-      <table th:if="${!#lists.isEmpty(pagos)}">
+      <table>
         <thead>
           <tr>
-            <th>Registro ID</th>
+            <th>Registro</th>
             <th>Placa</th>
             <th>Monto</th>
-            <th>Fecha de Pago</th>
+            <th>Hora del Pago</th>
           </tr>
         </thead>
         <tbody>
           <tr th:each="pago : ${pagos}">
             <td th:text="${pago.registro.id}">1</td>
             <td th:text="${pago.registro.vehiculo.placa}">ABC123</td>
-            <td th:text="${pago.monto}">$0.00</td>
-            <td th:text="${#temporals.format(pago.fechaPago, 'yyyy-MM-dd HH:mm')}">2025-05-15 08:30</td>
+            <td th:text="'$ ' + ${#numbers.formatDecimal(pago.monto.intValue(), 0, 'COMMA', 0, 'POINT')}">$0</td>
+            <td th:text="${#temporals.format(pago.fechaPago, 'HH:mm:ss')}">
+              00:00:00
+            </td>
           </tr>
         </tbody>
       </table>
+      <hr />
+      <h2>Todos los Pagos</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Registro</th>
+            <th>Placa</th>
+            <th>Monto</th>
+            <th>Fecha y Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="pago : ${paginaPagos.content}">
+            <td th:text="${pago.registro.id}">1</td>
+            <td th:text="${pago.registro.vehiculo.placa}">ABC123</td>
+            <td
+              th:text="'$ ' + ${#numbers.formatDecimal(pago.monto, 0, 'COMMA', 0, 'POINT')}"
+            >
+              $0
+            </td>
+            <td
+              th:text="${#temporals.format(pago.fechaPago, 'yyyy-MM-dd HH:mm')}"
+            >
+              2025-05-15
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 20px; text-align: center">
+        <div class="pagination">
+          <a
+            th:if="${paginaActual > 0}"
+            th:href="@{/pagos(page=${paginaActual - 1}, size=5)}"
+            class="home-button"
+            style="margin-right: 10px"
+            >⬅ Anterior</a
+          >
+
+          <span
+            th:each="i : ${#numbers.sequence(0, totalPaginas - 1)}"
+            th:classappend="${i == paginaActual} ? 'home-button' : ''"
+            style="margin: 0 5px"
+          >
+            <a
+              th:href="@{/pagos(page=${i}, size=5)}"
+              th:text="${i + 1}"
+              th:classappend="${i == paginaActual} ? 'active' : ''"
+              class="home-button"
+              style="padding: 8px 15px; font-size: 14px"
+            ></a>
+          </span>
+
+          <a
+            th:if="${paginaActual + 1 < totalPaginas}"
+            th:href="@{/pagos(page=${paginaActual + 1}, size=5)}"
+            class="home-button"
+            style="margin-left: 10px"
+            >Siguiente ➡</a
+          >
+        </div>
+      </div>
     </div>
   </body>
 </html>
